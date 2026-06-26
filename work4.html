@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Login System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        .light {
+            background-color: white;
+            color: black;
+        }
+        .dark {
+            background-color: black;
+            color: white;
+        }
+        .box {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 8px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkblue;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #otpDisplay {
+            margin-top: 10px;
+            font-size: 1.2em;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>Context-Aware Secure Login System</h2>
+    <input type="text" id="name" placeholder="Enter Name" required><br>
+    <input type="email" id="email" placeholder="Enter Email" required><br>
+    <input type="text" id="mobile" placeholder="Enter Mobile Number" required><br>
+    <select id="state" onchange="setThemeBasedOnTimeAndRegion()">
+        <option value="">Select State</option>
+        <option>Tamil Nadu</option>
+        <option>Kerala</option>
+        <option>Karnataka</option>
+        <option>Andhra Pradesh</option>
+        <option>Telangana</option>
+        <option>Punjab</option>
+        <option>Haryana</option>
+        <option>Delhi</option>
+        <option>Maharashtra</option>
+    </select>
+    <br><br>
+    <button onclick="login()">Login</button>
+    <div id="result"></div>
+    <div id="otpSection" style="display:none;">
+        <h3>Enter OTP sent to your email or mobile</h3>
+        <div id="otpDisplay"></div>
+        <input type="text" id="otpInput" placeholder="Enter OTP"/>
+        <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+</div>
+<script>
+    let currentOTP = "";
+    let userContactMethod = "";
+
+    // Function to set theme based on current time and selected region
+    function setThemeBasedOnTimeAndRegion() {
+        const regionSelect = document.getElementById("state");
+        const state = regionSelect.value;
+        const southStates = [
+            "Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana"
+        ];
+
+        // Get current IST time
+        const now = new Date();
+        const options = { timeZone: "Asia/Kolkata" };
+        const istTimeStr = now.toLocaleString("en-US", options);
+        const istTime = new Date(istTimeStr);
+        const hour = istTime.getHours();
+
+        // Determine theme
+        if (
+            southStates.includes(state) &&
+            hour >= 10 && hour < 12
+        ) {
+            document.body.className = "light";
+        } else {
+            document.body.className = "dark";
+        }
+    }
+
+    function login() {
+        const state = document.getElementById("state").value;
+        const email = document.getElementById("email").value;
+        const mobile = document.getElementById("mobile").value;
+
+        if (!state) {
+            alert("Please select a state");
+            return;
+        }
+
+        const southStates = [
+            "Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana"
+        ];
+
+        // Get current IST hour
+        const now = new Date();
+        const options = { timeZone: "Asia/Kolkata" };
+        const istTimeStr = now.toLocaleString("en-US", options);
+        const istTime = new Date(istTimeStr);
+        const hour = istTime.getHours();
+
+        // Generate OTP
+        currentOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Check if region is southern and time is between 10-12 AM
+        if (
+            southStates.includes(state) &&
+            hour >= 10 && hour < 12
+        ) {
+            userContactMethod = "email";
+            document.getElementById("otpDisplay").innerText = "OTP sent to Email: " + email + " | OTP: " + currentOTP;
+        } else {
+            userContactMethod = "mobile";
+            document.getElementById("otpDisplay").innerText = "OTP sent to Mobile Number: " + mobile + " | OTP: " + currentOTP;
+        }
+
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("otpSection").style.display = "block";
+        document.getElementById("otpInput").value = "";
+    }
+
+    function verifyOTP() {
+        const enteredOTP = document.getElementById("otpInput").value;
+        if (enteredOTP === currentOTP) {
+            document.getElementById("result").innerHTML = "OTP Verified! Login Successful.";
+            document.getElementById("otpSection").style.display = "none";
+        } else {
+            document.getElementById("result").innerHTML = "Incorrect OTP. Please try again.";
+        }
+    }
+</script>
+</body>
+</html>

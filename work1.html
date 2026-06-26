@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Advanced Comment System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      :root {
+            --primary-color: blue;
+            --bg-color: beige;
+            --card-bg: #f5f5dc;
+            --text-color: black;
+            --secondary-text: yellow;
+            --danger-color: darkred;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        body {
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            padding: 30px 15px;
+        }
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background:beige;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px cyan;
+            overflow: hidden;
+        }
+        .header {
+            background: beige;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .input-section {
+            padding: 25px;
+            background: lavender;
+            border-bottom: 1px solid gray;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .form-control {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid gray;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .form-control:focus {
+            border-color: pink;
+        }
+        textarea {
+            width: 100%;
+            resize: none;
+            margin-bottom: 12px;
+            min-height: 80px;
+        }
+        .button-submit {
+            background: beige;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s, transform 0.1s;
+        }
+        .button-submit:hover {
+            background: black;
+        }
+        .button-submit:active {
+            transform: scale(0.98);
+        }
+        .error-message {
+            color: darkred;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+            background: grey;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid lavender;
+        }
+        .comments-section {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .empty-state {
+            text-align: center;
+            color: brown;
+            padding: 40px;
+            font-style: italic;
+        }
+        .comment-card {
+            background: white;
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .avatar {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: yellow;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .user-name {
+            font-weight: 700;
+            color: black;
+            font-size: 15px;
+        }
+        .user-location {
+            font-size: 12px;
+            color: black;
+            background: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .timestamp {
+            font-size: 11px;
+            color: beige;
+        }
+        .comment-text {
+            color: yellow; 
+            line-height: 1.6;
+            font-size: 14px;
+            margin-bottom: 15px;
+            word-wrap: break-word;
+        }
+        .comment-text.translated {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid black;
+            font-style: italic;
+            color: black;
+        }
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            border-top: 1px solid black;
+            padding-top: 10px;
+        }
+        .action-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: cyan;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.2s;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+        .action-button:hover {
+            background: white;
+            color: skyblue;
+        }
+        .dislike-btn:hover {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2><i class="fas fa-comments"></i> Discussion Board</h2>
+        <p>Share your thoughts. Multi-language supported.</p>
+    </div>
+    <div class="input-section">
+        <div class="form-row">
+            <input type="text" id="username" class="form-control" placeholder="Your Name" required>
+            <input type="text" id="usercity" class="form-control" placeholder="City (e.g. London)" required>
+        </div>
+        <textarea id="commentbody" class="form-control" placeholder="Type your comment here in any language..."></textarea>
+        <button class="button-submit" onclick="postComment()">
+            <i class="fas fa-paper-plane"></i> Post Comment
+        </button>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+    <div class="comments-section" id="commentsList">
+        <div class="empty-state">No comments yet. Be the first to share!</div>
+    </div>
+</div>
+
+<script>
+    function postComment() {
+        const name = document.getElementById('username').value.trim();
+        const city = document.getElementById('usercity').value.trim();
+        const body = document.getElementById('commentbody').value.trim();
+        const errorDiv = document.getElementById('errorMessage');
+
+        errorDiv.style.display = 'none';
+        errorDiv.innerText = '';
+
+        if (!name || !city || !body) {
+            showError("All fields are required. Please fill them in.");
+            return;
+        }
+
+        const invalidRegex = /[<>\$\${}|\\^~₹£€¥©®""]/;
+        if (invalidRegex.test(body) || invalidRegex.test(name)) {
+            showError("Special characters like < > [ ] { } or symbols are not allowed.");
+            return;
+        }
+
+        const commentData = {
+            id: Date.now(),
+            name: name,
+            city: city,
+            text: body,
+            timestamp: new Date(),
+            likes: 0,
+            dislikes: 0
+        };
+
+        addCommentToUI(commentData);
+
+        document.getElementById('username').value = '';
+        document.getElementById('usercity').value = '';
+        document.getElementById('commentbody').value = '';
+    }
+
+    function showError(msg) {
+        const errorDiv = document.getElementById('errorMessage');
+        errorDiv.innerText = msg;
+        errorDiv.style.display = 'block';
+    }
+
+    function addCommentToUI(data) {
+        const list = document.getElementById('commentsList');
+        const emptyState = document.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+
+        const card = document.createElement('div');
+        card.className = 'comment-card';
+        card.id = `comment-${data.id}`;
+
+        const initial = data.name.charAt(0).toUpperCase();
+        const timeString = formatTime(data.timestamp);
+
+        card.innerHTML = `
+            <div class="comment-meta">
+                <div class="user-details">
+                    <div class="avatar">${initial}</div>
+                    <div>
+                        <div class="user-name">${data.name}</div>
+                        <div class="user-location">
+                            <i class="fas fa-map-marker-alt"></i> ${data.city}
+                        </div>
+                    </div>
+                </div>
+                <div class="timestamp">${timeString}</div>
+            </div>
+            <div class="comment-text" id="text-${data.id}">${data.text}</div>
+            <div class="action-bar">
+                <button class="action-btn like-btn" onclick="likeComment(${data.id})">
+                    <i class="far fa-thumbs-up"></i> <span id="likes-${data.id}">0</span>
+                </button>
+                <button class="action-btn dislike-btn" onclick="dislikeComment(${data.id})">
+                    <i class="far fa-thumbs-down"></i> <span id="dislikes-${data.id}">0</span>
+                </button>
+                <button class="action-btn" onclick="translateText(${data.id})">
+                    <i class="fas fa-globe-americas"></i> Translate
+                </button>
+            </div>
+        `;
+        list.prepend(card);
+    }
+
+    function likeComment(id) {
+        const el = document.getElementById(`likes-${id}`);
+        let count = parseInt(el.innerText);
+        el.innerText = count + 1;
+    }
+
+    function dislikeComment(id) {
+        const el = document.getElementById(`dislikes-${id}`);
+        let count = parseInt(el.innerText);
+        count++;
+        el.innerText = count;
+
+        if (count >= 2) {
+            const card = document.getElementById(`comment-${id}`);
+            card.style.opacity = '0.5';
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                alert("This comment has received 2 dislikes and has been automatically removed for moderation.");
+                card.remove();
+            }, 600);
+        }
+    }
+
+    function translateText(id) {
+        const textEl = document.getElementById(`text-${id}`);
+        const originalText = textEl.innerText;
+        if (textEl.classList.contains('translated')) {
+            textEl.classList.remove('translated');
+            textEl.innerText = originalText.replace("[English Translation]: ", "");
+        } else {
+            textEl.classList.add('translated');
+            textEl.innerText = "[English Translation]: " + originalText;
+        }
+    }
+
+    function formatTime(date) {
+        let now = new Date();
+        let diff = (now - date) / 1000;
+        if (diff < 60) return "Just now";
+        if (diff < 3600) return Math.floor(diff / 60) + " mins ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + " hours ago";
+        return date.toLocaleDateString();
+    }
+</script>
+</body>
+</html>

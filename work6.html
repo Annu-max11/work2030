@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Colorful Video Chat</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #f9d423, #ff4e50);
+    text-align: center;
+    padding: 20px;
+    color: white;
+  }
+  video {
+    width: 45%;
+    margin: 10px;
+    border: 5px solid #fff;
+    border-radius: 10px;
+    background: #000;
+  }
+  button {
+    background-color: #fff;
+    color: #333;
+    border: none;
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    background-color: #ffd700;
+  }
+  #status {
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<h1>🌟 My Video</h1>
+<video id="myVideo" autoplay playsinline muted></video>
+
+<h1>🎉 Friend's Video</h1>
+<video id="friendVideo" autoplay playsinline></video>
+
+<div>
+  <button id="startButton">🎬 Start Camera</button>
+  <button id="callButton">📞 Call</button>
+  <button id="hangupButton">✋ Hang Up</button>
+</div>
+
+<div id="status">Status: Idle</div>
+
+<script>
+  let localStream;
+  let peerConnection;
+  let socket;
+  const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+  const myVideo = document.getElementById('myVideo');
+  const friendVideo = document.getElementById('friendVideo');
+  const startButton = document.getElementById('startButton');
+  const callButton = document.getElementById('callButton');
+  const hangupButton = document.getElementById('hangupButton');
+  const statusDiv = document.getElementById('status');
+
+  startButton.onclick = async () => {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      myVideo.srcObject = localStream;
+      updateStatus('Camera started! 🚀');
+    } catch (error) {
+      alert('Oops! Error accessing camera: ' + error);
+    }
+  };
+
+  callButton.onclick = () => {
+    startSignaling();
+  };
+
+  hangupButton.onclick = () => {
+    endCall();
+  };
+
+  function updateStatus(message) {
+    document.getElementById('status').textContent = 'Status: ' + message;
+  }
+
+  function startSignaling() {
+    socket = new WebSocket('ws://localhost:8080');
+    socket.onopen = () => {
+      updateStatus('Connected! 🎉 Starting connection...');
+      createPeerConnection();
+      peerConnection.createOffer()
+        .then(offer => peerConnection.setLocalDescription(offer))
+        .then(() => {
+          socket.send(JSON.stringify({ type: 'offer', sdp: peerConnection.localDescription }));
+        });
+    };
+
+    socket.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+      if (data.type === 'offer') {
+        if (!peerConnection) createPeerConnection();
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.send(JSON.stringify({ type: 'answer', sdp: peerConnection.localDescription }));
+        updateStatus('Received offer! Connecting...');
+      } else if (data.type === 'answer') {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        updateStatus('Connected! 🎉');
+      } else if (data.candidate) {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      updateStatus('Disconnected. 😢');
+    };
+  }
+
+  function createPeerConnection() {
+    peerConnection = new RTCPeerConnection(config);
+    if (localStream) {
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    }
+    peerConnection.ontrack = (event) => {
+      friendVideo.srcObject = event.streams[0];
+    };
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.send(JSON.stringify({ candidate: event.candidate }));
+      }
+    };
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === 'connected') {
+        updateStatus('🎉 Friends connected!');
+      }
+    };
+  }
+
+  function endCall() {
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+    if (socket) {
+      socket.close();
+      socket = null;
+    }
+    updateStatus('Call ended. 😴');
+  }
+</script>
+
+</body>
+</html>

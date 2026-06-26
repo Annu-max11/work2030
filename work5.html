@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Video Player</title>
+<style>
+body {
+margin: 0;
+background:black;
+font-family: Arial, sans-serif;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+}
+.player-box {
+width: 90%;
+max-width: 800px;
+background: black;
+border-radius: 10px;
+overflow: hidden;
+position: relative;
+}
+video {
+width: 100%;
+display: block;
+}
+.message {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+color: white;
+font-size: 22px;
+font-weight: bold;
+text-shadow: 2px 2px 4px black;
+opacity: 0;
+transition: opacity 0.3s;
+}
+.message.show {
+opacity: 1;
+}
+.comment-box {
+position: fixed;
+right: -300px;
+top: 0;
+width: 280px;
+height: 100%;
+background: green;
+padding: 20px;
+box-sizing: border-box;
+transition: right 0.3s;
+border-left: 2px solid purple;
+}
+.comment-box.open {
+right: 0;
+}
+.comment-box h2 {
+color: purple;
+}
+.help-box {
+position: fixed;
+bottom: 15px;
+left: 15px;
+background: blue;
+padding: 12px;
+border-radius: 8px;
+color: white;
+font-size: 13px;
+}
+.help-box b {
+color: purple;
+}
+</style>
+</head>
+<body>
+
+<div class="player-box" id="videoBox">
+<video id="vid">
+<source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+</video>
+<div class="message" id="msg"></div>
+</div>
+
+<div class="comment-box" id="commentPanel">
+<h2>💬 Comments</h2>
+<p>Nice video!</p>
+</div>
+
+<div class="help-box">
+<b>Left:</b> -10s | <b>Right:</b> +10s<br>
+<b>Center:</b> Play/Pause<br>
+<b>3 taps:</b> Skip/Comments/Close
+</div>
+
+<script>
+let video = document.getElementById("vid");
+let box = document.getElementById("videoBox");
+let showMsg = document.getElementById("msg");
+let commentBox = document.getElementById("commentPanel");
+let tapNum = 0;
+let tapTime = null;
+let tapArea = "";
+let allVideos = [
+"https://www.w3schools.com/html/mov_bbb.mp4",
+"https://www.w3schools.com/html/movie.mp4"
+];
+let nowVideo = 0;
+
+function checkWhere(x) {
+let wide = box.getBoundingClientRect().width;
+let place = x - box.getBoundingClientRect().left;
+if (place < wide / 3) return "left";
+if (place > wide * 2 / 3) return "right";
+return "center";
+}
+
+function text(msg) {
+showMsg.innerText = msg;
+showMsg.classList.add("show");
+setTimeout(() => showMsg.classList.remove("show"), 700);
+}
+
+function doAction(num, area) {
+if (num === 1 && area === "center") {
+if (video.paused) { video.play(); text("▶️ Play"); }
+else { video.pause(); text("⏸️ Pause"); }
+}
+else if (num === 2 && area === "left") {
+video.currentTime -= 10;
+text("⏪ -10 sec");
+}
+else if (num === 2 && area === "right") {
+video.currentTime += 10;
+text("⏩ +10 sec");
+}
+else if (num === 3 && area === "center") {
+nowVideo = (nowVideo + 1) % allVideos.length;
+video.src = allVideos[nowVideo];
+video.play();
+text("⏭️ Next");
+}
+else if (num === 3 && area === "left") {
+commentBox.classList.toggle("open");
+text(commentBox.classList.contains("open") ? "💬 Open" : "💬 Close");
+}
+else if (num === 3 && area === "right") {
+text("👋 Bye!");
+setTimeout(() => window.close(), 500);
+}
+}
+
+function onTap(e) {
+let where = checkWhere(e.clientX);
+if (where !== tapArea) {
+tapNum = 0;
+tapArea = where;
+}
+tapNum++;
+if (tapTime) clearTimeout(tapTime);
+tapTime = setTimeout(() => {
+doAction(tapNum, tapArea);
+tapNum = 0;
+}, 350);
+}
+
+box.addEventListener("click", onTap);
+</script>
+
+</body>
+</html>

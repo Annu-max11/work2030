@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>VideoHub Premium Upgrade</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: lightblue;
+    padding: 20px;
+    text-align: center;
+  }
+  #button {
+    font-size: 20px;
+    padding: 15px 30px;
+    background-color: orange;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+  }
+  #button:hover {
+    background-color: darkorange;
+  }
+  #displayArea {
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Upgrade to VideoHub Premium</h1>
+<button id="button">Upgrade Premium</button>
+<div id="displayArea"></div>
+
+<script>
+  let user = { plan: 'free' };
+
+  function saveData() {
+    localStorage.setItem('videoHubUser', JSON.stringify(user));
+  }
+
+  function loadData() {
+    const data = localStorage.getItem('videoHubUser');
+    if (data) { user = JSON.parse(data); }
+  }
+
+  function updateDisplay() {
+    const displayArea = document.getElementById('displayArea');
+    if (user.plan === 'premium') {
+      displayArea.innerHTML = `<h2>🎉 You are a Premium User! 🎉</h2><p>Enjoy unlimited downloads and exclusive content.</p>`;
+    } else {
+      displayArea.innerHTML = `<h2>Welcome, Free User</h2><p>Upgrade to Premium for unlimited downloads!</p>`;
+    }
+  }
+
+  loadData();
+  updateDisplay();
+
+  const razorpayKey = 'rzp_test_1234567890abcdef';
+
+  function upgradePremium() {
+    const options = {
+      key: razorpayKey,
+      amount: 49900,
+      currency: 'INR',
+      name: 'VideoHub Premium',
+      description: 'Unlimited Downloads',
+      handler: function (response) {
+        // Payment successful, update user plan
+        user.plan = 'premium';
+        saveData();
+        updateDisplay();
+        alert('🎉 Payment Successful! Welcome to Premium!');
+      },
+      modal: {
+        ondismiss: function () {
+          alert('Payment cancelled.');
+        }
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+
+  document.getElementById('button').addEventListener('click', upgradePremium);
+</script>
+
+</body>
+</html>
