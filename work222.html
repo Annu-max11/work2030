@@ -1,0 +1,424 @@
+<html>
+<head>
+    <title>VideoHub - Download Videos</title>
+    
+    <script src="https://checkout.razorpay.com/v1/razorpay.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(0,0,0,0.5);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 20px;
+        }
+        
+        .nav-links a.active {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        
+        .badge {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .badge-free { background: #ff6b6b; }
+        .badge-premium { background: #ffd700; color: #333; }
+        
+        .container {
+            max-width: 1000px;
+            margin: 80px auto 20px;
+            padding: 20px;
+        }
+        
+        .video-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .video-player {
+            width: 100%;
+            border-radius: 10px;
+        }
+        
+        .video-title {
+            font-size: 28px;
+            color: #00d4ff;
+            margin: 15px 0 10px;
+        }
+        
+        .video-desc {
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .btn-download {
+            background: #00d4ff;
+            color: #1a1a2e;
+        }
+        
+        .btn-premium {
+            background: linear-gradient(45deg, #ffd700, #ffaa00);
+            color: #333;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .message.show { display: block; }
+        .message.success { background: rgba(0,255,0,0.2); color: #0f0; }
+        .message.error { background: rgba(255,0,0,0.2); color: #f66; }
+        
+        .status {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        
+        .status-item span {
+            display: block;
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .status-item strong {
+            font-size: 20px;
+            color: #00d4ff;
+        }
+        
+        .downloads-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+        
+        .downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        
+        .download-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .download-item h4 {
+            margin-bottom: 5px;
+        }
+        
+        .download-item p {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .profile-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .avatar {
+            width: 70px;
+            height: 70px;
+            background: #00d4ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+        }
+        
+        @media (max-width: 700px) {
+            .navbar { flex-direction: column; gap: 10px; }
+            .status { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVIGATION -->
+    <nav class="navbar">
+        <div class="logo">▶ VideoHub</div>
+        <div class="nav-links">
+            <a onclick="showPage('home')" id="nav-home" class="active">Home</a>
+            <a onclick="showPage('profile')" id="nav-profile">My Profile</a>
+            <span id="user-badge" class="badge badge-free">Free User</span>
+        </div>
+    </nav>
+    
+    <!-- HOME PAGE -->
+    <div id="home-page" class="container">
+        <!-- Video Card -->
+        <div class="video-card">
+            <video class="video-player" controls>
+                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+            </video>
+            
+            <h1 class="video-title">Learn Web Development</h1>
+            <p class="video-desc">Complete tutorial for beginners. Download and watch anytime!</p>
+            
+            <button class="btn btn-download" onclick="downloadVideo()">⬇ Download Video</button>
+            <button class="btn btn-premium" onclick="upgradePremium()">★ Upgrade Premium</button>
+            
+            <div id="message" class="message"></div>
+            
+            <div class="status">
+                <div class="status-item">
+                    <span>Your Plan</span>
+                    <strong id="plan-display">Free</strong>
+                </div>
+                <div class="status-item">
+                    <span>Today Downloads</span>
+                    <strong id="today-display">0/1</strong>
+                </div>
+                <div class="status-item">
+                    <span>Total Downloads</span>
+                    <strong id="total-display">0</strong>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Downloads Section -->
+        <div class="downloads-section">
+            <h2 class="section-title">📥 Your Downloads</h2>
+            <div id="downloads-list" class="downloads-grid">
+                <p style="color:#888">No downloads yet!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PROFILE PAGE -->
+    <div id="profile-page" class="container" style="display:none">
+        <div class="profile-card">
+            <div class="avatar">👤</div>
+            <div>
+                <h2>Welcome Student!</h2>
+                <p id="profile-plan" style="color:#00d4ff">Free Plan</p>
+                <p id="profile-stats" style="color:#888">Downloads today: 0/1</p>
+            </div>
+            <button class="btn btn-premium" onclick="upgradePremium()">★ Upgrade</button>
+        </div>
+        
+        <div class="downloads-section">
+            <h2 class="section-title">📥 My Downloads</h2>
+            <div id="profile-downloads" class="downloads-grid">
+                <p style="color:#888">No downloads yet!</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        
+        let user = JSON.parse(localStorage.getItem('videoHubUser')) || {
+            plan: 'free',
+            downloadsToday: 0,
+            lastDownloadDate: null,
+            totalDownloads: 0,
+            downloads: []
+        };
+        
+        const video = {
+            title: 'Learn Web Development',
+            url: 'https://www.w3schools.com/html/mov_bbb.mp4'
+        };
+        
+       
+        function getToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+        
+        function getDateTime() {
+            return new Date().toLocaleString();
+        }
+        
+        function saveData() {
+            localStorage.setItem('videoHubUser', JSON.stringify(user));
+        }
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message show ' + type;
+            setTimeout(() => msg.className = 'message', 5000);
+        }
+        
+       
+        function canDownload() {
+            const today = getToday();
+            
+            if (user.lastDownloadDate !== today) {
+                user.downloadsToday = 0;
+                user.lastDownloadDate = today;
+            }
+            
+            if (user.plan === 'premium') return true;
+            
+            return user.downloadsToday < 1;
+        }
+        
+        
+        function downloadVideo() {
+            if (!canDownload()) {
+                showMessage('❌ Daily limit reached! Upgrade to Premium.', 'error');
+                return;
+            }
+            
+            if (user.plan === 'free') {
+                user.downloadsToday++;
+            }
+            
+            user.totalDownloads++;
+            
+            user.downloads.push({
+                title: video.title,
+                date: getDateTime()
+            });
+            
+            saveData();
+            
+            const link = document.createElement('a');
+            link.href = video.url;
+            link.download = video.title + '.mp4';
+            link.click();
+            
+            showMessage('✅ Video downloaded!', 'success');
+            updateDisplay();
+        }
+        
+        
+        function upgradePremium() {
+            const options = {
+                key: 'rzp_test_YOUR_KEY_HERE',  // Replace with your Razorpay test key
+                amount: 49900,  // ₹499 in paise
+                currency: 'INR',
+                name: 'VideoHub Premium',
+                description: 'Unlimited Downloads',
+                handler: function(response) {
+                    user.plan = 'premium';
+                    saveData();
+                    updateDisplay();
+                    alert('🎉 Payment Successful! Welcome to Premium!');
+                }
+            };
+            
+            try {
+                const rzp = new Razorpay(options);
+                rzp.open();
+            } catch(e) {
+                if(confirm('Demo Mode: Simulate payment?')) {
+                    user.plan = 'premium';
+                    saveData();
+                    updateDisplay();
+                    alert('🎉 You are now Premium!');
+                }
+            }
+        }
+        
+       
+        function showPage(page) {
+            document.getElementById('home-page').style.display = page === 'home' ? 'block' : 'none';
+            document.getElementById('profile-page').style.display = page === 'profile' ? 'block' : 'none';
+            document.getElementById('nav-home').className = page === 'home' ? 'active' : '';
+            document.getElementById('nav-profile').className = page === 'profile' ? 'active' : '';
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            const badge = document.getElementById('user-badge');
+            badge.textContent = user.plan === 'premium' ? '⭐ Premium' : 'Free User';
+            badge.className = 'badge ' + (user.plan === 'premium' ? 'badge-premium' : 'badge-free');
+            
+            document.getElementById('plan-display').textContent = user.plan === 'premium' ? 'Premium' : 'Free';
+            document.getElementById('today-display').textContent = 
+                user.plan === 'premium' ? 'Unlimited' : user.downloadsToday + '/1';
+            document.getElementById('total-display').textContent = user.totalDownloads;
+            
+            document.getElementById('profile-plan').textContent = user.plan === 'premium' ? '⭐ Premium Plan' : 'Free Plan';
+            document.getElementById('profile-stats').textContent = 
+                user.plan === 'premium' ? 'Unlimited downloads' : 'Downloads today: ' + user.downloadsToday + '/1';
+            
+            const list1 = document.getElementById('downloads-list');
+            if (user.downloads.length === 0) {
+                list1.innerHTML = '<p style="color:#888">No downloads yet!</p>';
+            } else {
+                list1.innerHTML = user.downloads.map(d => 
+                    '<div class="download-item"><h4>' + d.title + '</h4><p>' + d.date + '</p></div>'
+                ).join('');
+            }
+            
+            const list2 = document.getElementById('profile-downloads');
+            if (user.downloads.length === 0) {
+                list2.innerHTML = '<p style="color:#888">No downloads yet!</p>';
+            } else {
+                list2.innerHTML = user.downloads.map(d => 
+                    '<div class="download-item"><h4>' + d.title + '</h4><p>' + d.date + '</p></div>'
+                ).join('');
+            }
+        }
+        
+        updateDisplay();
+    </script>
+</body>
+</html>
